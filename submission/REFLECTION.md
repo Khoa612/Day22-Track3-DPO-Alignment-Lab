@@ -27,8 +27,8 @@
 |---|---:|---:|
 | Training time (NB3) | ~8 min (SFT, 125 steps) | ~20 min (DPO, 250 steps) |
 | VRAM peak | ~10.5 GB | ~13.8 GB |
-| Final loss | 1.4805 (SFT) | 0.8240 (DPO) |
-| Reward gap (chosen − rejected, end of training) | n/a | +0.084 |
+| Final loss | 1.4805 (SFT) | 0.8248 (DPO) |
+| Reward gap (chosen − rejected, end of training) | n/a | +0.086 |
 | Mean output length | ~140 tokens | ~95 tokens (-32%) |
 
 **Tulu 3 reference numbers** (from deck §7.2b, for context only):
@@ -43,7 +43,7 @@
 
 The DPO reward curves show a clear separation between chosen and rejected rewards over the 250 training steps. At the beginning of training, both chosen and rejected rewards started at similar levels (around -0.55 to -0.60), reflecting the fact that the model initially treated both response types similarly. As training progressed, the chosen reward increased gradually from approximately -0.55 to -0.49, while the rejected reward decreased to -0.574, creating a final reward gap of +0.084.
 
-This pattern is consistent with the "classic DPO success" paradigm described in the lecture deck §3.4. The gap grew primarily because the model learned to suppress probability on rejected responses (likelihood displacement) rather than dramatically boosting chosen responses. This is the expected behavior for DPO with β=0.1 — the KL penalty constrains the model from diverging too far from the reference policy, resulting in moderate but stable preference learning. The relatively small gap (+0.084) compared to larger models in the Tulu 3 paper is expected given our 3B parameter scale and limited 2000-pair training set.
+This pattern is consistent with the "classic DPO success" paradigm described in the lecture deck §3.4. The gap grew primarily because the model learned to suppress probability on rejected responses (likelihood displacement) rather than dramatically boosting chosen responses. This is the expected behavior for DPO with β=0.1 — the KL penalty constrains the model from diverging too far from the reference policy, resulting in moderate but stable preference learning. The relatively small gap (+0.086) compared to larger models in the Tulu 3 paper is expected given our 3B parameter scale and limited 2000-pair training set.
 
 ---
 
@@ -75,7 +75,7 @@ _If you ran the β-sweep bonus (rigor add-on +6), describe the result:_
 | β | Reward gap | Win-rate (8 prompts) | Output length | Notes |
 |---:|---:|---:|---:|---|
 | 0.05 | — | — | — | Not tested |
-| 0.1 (default) | +0.084 | 7/8 | ~95 tokens | Used for final model |
+| 0.1 (default) | +0.086 | 7/8 | ~95 tokens | Used for final model |
 | 0.5 | — | — | — | Not tested |
 
 **Hypothesis (3 sentences):** With β=0.05 (lower KL penalty), I would expect a larger reward gap but potentially more degenerate or repetitive outputs, as the model is less constrained from diverging from the reference policy. With β=0.5 (higher KL penalty), the reward gap would be much smaller, and the model would behave almost identically to the SFT baseline, since the KL term dominates the optimization objective. The sweet spot for our Vietnamese-focused dataset is likely around β=0.1–0.15, consistent with the deck's §3.3 recommendation that moderate β values balance alignment improvement with output quality preservation.

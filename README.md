@@ -14,8 +14,8 @@ Build SFT-mini checkpoint → train DPO adapter → compare SFT-only vs SFT+DPO 
 | Stage | Key Metric | Value |
 |---|---|---|
 | **SFT (NB1)** | Final train loss | 1.4805 |
-| **DPO (NB3)** | Final DPO loss | 0.8240 |
-| **DPO (NB3)** | Reward gap (chosen − rejected) | +0.084 |
+| **DPO (NB3)** | Final DPO loss | 0.8248 |
+| **DPO (NB3)** | Reward gap (chosen − rejected) | +0.086 |
 | **Eval (NB4)** | DPO win-rate (8 prompts) | 7/8 wins |
 | **Deploy (NB5)** | GGUF Q4_K_M size | ~1.9 GB |
 | **Benchmark (NB6)** | MMLU (SFT → DPO) | 0.698 → 0.705 (+0.007) |
