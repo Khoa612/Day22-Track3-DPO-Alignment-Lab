@@ -1,9 +1,28 @@
 # Day 22 — DPO/ORPO Alignment Lab (Track 3)
 
+**Sinh viên:** Hồ Nhất Khoa · **MSSV:** 2A202600066 
+
 Lab cho **AICB-P2T3 · Ngày 22 · DPO/ORPO Alignment — From SFT to Preference Learning**.
 Build SFT-mini checkpoint → train DPO adapter → compare SFT-only vs SFT+DPO → merge + GGUF + serve.
 
 > Lab 22 là **lab alignment đầu tiên trong khoá** — bạn đi từ SFT (Lab 21) sang preference learning, đo helpfulness/safety bằng judge, và export model deployable. Output có thể là 1 **DPO-aligned VN model open-source publishable đầu tiên end-to-end của khoá** (xem deck §5).
+
+---
+
+## 📊 Results Summary
+
+| Stage | Key Metric | Value |
+|---|---|---|
+| **SFT (NB1)** | Final train loss | 1.4805 |
+| **DPO (NB3)** | Final DPO loss | 0.8240 |
+| **DPO (NB3)** | Reward gap (chosen − rejected) | +0.084 |
+| **Eval (NB4)** | DPO win-rate (8 prompts) | 7/8 wins |
+| **Deploy (NB5)** | GGUF Q4_K_M size | ~1.9 GB |
+| **Benchmark (NB6)** | MMLU (SFT → DPO) | 0.698 → 0.705 (+0.007) |
+| **Benchmark (NB6)** | IFEval | 0.150 → 0.150 (flat) |
+| **Benchmark (NB6)** | GSM8K | 0.600 → 0.600 (flat) |
+
+**Platform:** Kaggle Tesla T4 (14.5 GB VRAM) · Qwen2.5-3B-bnb-4bit · Cost: $0
 
 ---
 
@@ -31,8 +50,8 @@ Click → Runtime → Change runtime type → **T4 GPU** → Run all.
 **Option 2: Local laptop (≥ 12 GB VRAM)**
 
 ```bash
-git clone https://github.com/<your-username>/Day22-Track3-DPO-Alignment-Lab.git
-cd Day22-Track3-DPO-Alignment-Lab
+git clone https://github.com/Khoa612/Day22-Track3-DPO-Alignment-Lab.git
+cd 2A202600066-ho_nhat_khoa-lab22
 bash setup-laptop.sh    # ~5 min — venv + deps + cuda probe + smoke test
 make smoke              # 2-step training run on each notebook to verify GPU
 make pipeline           # full pipeline: sft → data → dpo → eval → deploy (~45 min)
@@ -243,7 +262,7 @@ Full provocations: [`BONUS-CHALLENGE.md`](BONUS-CHALLENGE.md) (tiếng Việt) �
 1. **Fork hoặc copy repo này lên GitHub account của bạn**, set repo **public**.
    ```bash
    git init -b main
-   git remote add origin https://github.com/<your-username>/Day22-Track3-DPO-Alignment-Lab.git
+   git remote add origin https://github.com/Khoa612/2A202600066-ho_nhat_khoa-lab22.git
    ```
 2. Hoàn thành 5 notebooks (giữ output cells trong `.ipynb`).
 3. Add ảnh chụp vào `submission/screenshots/` (xem [`submission/screenshots/README.md`](submission/screenshots/README.md) để biết list 6+3).

@@ -1,7 +1,7 @@
 # Reflection — Lab 22 (DPO/ORPO Alignment)
 
-**Tên:** Hồ Nhật Khoa
-**Cohort:** A20
+**Tên:** Hồ Nhất Khoa
+**MSSV:** 2A202600066
 **Tier đã chạy:** T4
 **Date:** 2026-05-08
 
