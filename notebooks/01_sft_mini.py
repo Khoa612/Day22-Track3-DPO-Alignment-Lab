@@ -41,7 +41,7 @@ else:  # BIGGPU
     PER_DEVICE_BATCH = 2
     GRAD_ACCUM = 4
 
-SFT_DATASET = os.environ.get("SFT_DATASET", "5CD-AI/Vietnamese-alpaca-cleaned")
+SFT_DATASET = os.environ.get("SFT_DATASET", "saillab/alpaca-vietnamese-cleaned")
 SFT_SLICE = 1000
 NUM_EPOCHS = 1
 
@@ -117,6 +117,9 @@ print(f"Loaded {len(ds)} rows. Columns: {ds.column_names}")
 print(f"\nFirst row:\n{ds[0]}")
 
 # %%
+from unsloth.chat_templates import get_chat_template
+tokenizer = get_chat_template(tokenizer, chat_template="chatml")
+
 # Alpaca → ChatML format (Qwen2.5's native template)
 def format_alpaca_to_chat(row):
     messages = []

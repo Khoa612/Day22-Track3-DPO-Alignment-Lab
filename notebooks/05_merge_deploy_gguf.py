@@ -66,9 +66,8 @@ if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
 # Stack SFT-mini → DPO adapters
-SFT_PATH = REPO_ROOT / "adapters" / "sft-mini"
-model = PeftModel.from_pretrained(model, str(SFT_PATH))
-print(f"Loaded SFT-mini adapter from {SFT_PATH}")
+model = PeftModel.from_pretrained(model, str(DPO_PATH))
+print(f"Loaded DPO adapter from {DPO_PATH}")
 
 # %% [markdown]
 # > **Note:** The DPO adapter trained in NB3 stacks on top of SFT. To get a fully
@@ -85,11 +84,30 @@ print(f"Loaded SFT-mini adapter from {SFT_PATH}")
 # %%
 # This re-loads the model with both SFT and DPO adapters merged into base weights.
 # Output is FP16 (or BF16 on Ampere+) HF-format weights ready for inference.
-model.save_pretrained_merged(
-    str(MERGED_PATH),
-    tokenizer,
-    save_method="merged_16bit",
-)
+# Use standard PEFT merge to bypass Unsloth/Transformers bug
+model = model.merge_and_unload()
+model.save_pretrained(str(MERGED_PATH), safe_serialization=True, save_original_format=False)
+tokenizer.save_pretrained(str(MERGED_PATH))
+
+import json
+config_path = MERGED_PATH / "config.json"
+if config_path.exists():
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    if "quantization_config" in config:
+        del config["quantization_config"]
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2)
+
+import urllib.request
+vocab_url = "https://huggingface.co/Qwen/Qwen2.5-3B/resolve/main/vocab.json"
+merges_url = "https://huggingface.co/Qwen/Qwen2.5-3B/resolve/main/merges.txt"
+try:
+    urllib.request.urlretrieve(vocab_url, str(MERGED_PATH / "vocab.json"))
+    urllib.request.urlretrieve(merges_url, str(MERGED_PATH / "merges.txt"))
+except Exception as e:
+    pass
+
 print(f"Saved merged FP16 to {MERGED_PATH}")
 
 # Free GPU memory before GGUF conversion (which spawns a subprocess that needs RAM)
@@ -108,27 +126,19 @@ torch.cuda.empty_cache()
 
 # %%
 # Reload the merged model — Unsloth's GGUF saver expects a live model handle.
-from unsloth import FastLanguageModel as FLM
+# TO AVOID OOM ON COLAB T4, we bypass Unsloth's python wrapper and run llama.cpp directly.
+import os
 
-model, tokenizer = FLM.from_pretrained(
-    model_name=str(MERGED_PATH),
-    max_seq_length=MAX_LEN,
-    dtype=None,
-    load_in_4bit=False,    # already merged; load full precision
-)
+print("Running llama.cpp directly to avoid RAM OOM...")
+os.system("python /root/.unsloth/llama.cpp/unsloth_convert_hf_to_gguf.py --outfile merged-fp16.F16.gguf --outtype f16 adapters/merged-fp16")
+os.system("/root/.unsloth/llama.cpp/llama-quantize merged-fp16.F16.gguf gguf/qwen2.5-3b-q4_k_m.gguf q4_k_m")
+os.system("rm merged-fp16.F16.gguf")
 
-# %%
-# Save GGUF in 1 quantization tier (Q4_K_M). Add more tiers below if you want the
-# +3 "GGUF release published" rigor add-on.
-model.save_pretrained_gguf(
-    str(GGUF_DIR),
-    tokenizer,
-    quantization_method="q4_k_m",
-)
 print(f"Saved GGUF Q4_K_M to {GGUF_DIR}")
 
 # %% [markdown]
 # ### 3a. Optional — additional quantization tiers (for the +3 rigor add-on)
+
 
 # %%
 # Uncomment if you want Q5_K_M + Q8_0 too (~2× total disk space).

@@ -141,7 +141,7 @@ dpo_config = DPOConfig(
     fp16=not torch.cuda.is_bf16_supported(),
     seed=42,
     loss_type="sigmoid",         # DPO standard (alternatives: ipo, hinge, kto)
-    report_to="none",
+    report_to="wandb" if os.environ.get("WANDB_API_KEY") else "none",
 )
 
 print(f"DPOConfig: beta={dpo_config.beta}  lr={dpo_config.learning_rate}  loss_type={dpo_config.loss_type}")
@@ -169,6 +169,11 @@ trainer = DPOTrainer(
     train_dataset=pref_ds,
     tokenizer=tokenizer,
 )
+
+import wandb
+if os.environ.get("WANDB_API_KEY"):
+    wandb.login(key=os.environ.get("WANDB_API_KEY"))
+    wandb.init(project="lab22-dpo", name=f"dpo-beta{BETA}")
 
 # %%
 train_result = trainer.train()
