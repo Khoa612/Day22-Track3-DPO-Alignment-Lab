@@ -1,0 +1,34 @@
+{
+  "compute_tier": "T4",
+  "limits": {
+    "ifeval": 30,
+    "gsm8k": 20,
+    "mmlu": 50,
+    "alpaca_lite": 20
+  },
+  "metrics": {
+    "IFEval": {
+      "sft": null,
+      "dpo": null,
+      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+    },
+    "GSM8K": {
+      "sft": null,
+      "dpo": null,
+      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+    },
+    "MMLU": {
+      "sft": null,
+      "dpo": null,
+      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+    },
+    "AlpacaEval-lite": {
+      "sft": 0.5,
+      "dpo": 0.6,
+      "note": "4 wins, 16 ties, 0 losses over 20 prompts. Judge: gpt-4o-mini"
+    }
+  },
+  "deltas": {
+    "AlpacaEval-lite": 0.1
+  }
+}

@@ -38,3 +38,15 @@ hf_cache/
 .idea/
 .vscode/
 *.swp
+
+# Kaggle downloaded outputs (large model weights + GGUF)
+kaggle-output/
+
+# Temp downloaded notebooks from Kaggle
+colab/notebookk*.ipynb
+
+# Run logs
+log.txt
+
+# Claude Code config (dev tool, not submission artifact)
+CLAUDE.md

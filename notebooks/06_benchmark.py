@@ -31,10 +31,10 @@ from pathlib import Path
 COMPUTE_TIER = os.environ.get("COMPUTE_TIER", "T4").upper()
 
 if COMPUTE_TIER == "T4":
-    LIMIT_IFEVAL = 540
-    LIMIT_GSM8K = 500
-    LIMIT_MMLU = 500
-    LIMIT_ALPACA = 100
+    LIMIT_IFEVAL = 30   # ~10 min total (SFT+DPO)
+    LIMIT_GSM8K  = 20   # ~15 min total (chain-of-thought is slow)
+    LIMIT_MMLU   = 50   # ~10 min total
+    LIMIT_ALPACA = 20   # ~8 min total (generation + API judge)
     BATCH_SIZE = 1
 else:
     LIMIT_IFEVAL = 540
@@ -68,33 +68,50 @@ assert torch.cuda.is_available(), "Need GPU. See HARDWARE-GUIDE.md."
 # ## 1. Helper — run lm-eval on a model+adapter pair
 
 # %%
-import subprocess
+import torch
 
 
 def run_lm_eval(adapter_path, tasks, limit, num_fewshot, label):
-    """Run lm-eval-harness with PEFT adapter on top of base, return parsed metrics."""
-    base = "unsloth/Qwen2.5-3B-bnb-4bit" if COMPUTE_TIER == "T4" else "unsloth/Qwen2.5-7B-bnb-4bit"
-    out_dir = EVAL_OUT / f"lm-{label}-{tasks}"
-    cmd = [
-        "lm_eval",
-        "--model", "hf",
-        "--model_args", f"pretrained={base},peft={adapter_path},load_in_4bit=True",
-        "--tasks", tasks,
-        "--num_fewshot", str(num_fewshot),
-        "--limit", str(limit),
-        "--batch_size", str(BATCH_SIZE),
-        "--device", "cuda:0",
-        "--output_path", str(out_dir),
-    ]
-    print(f"\n{'=' * 60}\nRunning lm-eval [{label}]: {tasks}\n{'=' * 60}")
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=2400)
+    """Load via FastLanguageModel (same as NB4 AlpacaEval — confirmed to work on Kaggle).
+    Passes pre-loaded model to HFLM to avoid any kwarg/4-bit issue in transformers 5.x."""
+    from lm_eval import simple_evaluate
+    from lm_eval.models.huggingface import HFLM
+    from unsloth import FastLanguageModel
 
-    out_files = sorted(out_dir.glob("**/results*.json"))
-    if not out_files:
-        print("WARN: lm-eval didn't write results JSON. STDOUT tail:")
-        print(proc.stdout[-1000:])
-        return {"error": "no_results"}
-    return json.loads(out_files[-1].read_text())["results"]
+    sep = "=" * 60
+    print(f"\n{sep}\nRunning lm-eval [{label}]: {tasks}\n{sep}")
+    try:
+        print(f"  Loading adapter via unsloth: {adapter_path}")
+        model, tokenizer = FastLanguageModel.from_pretrained(
+            model_name=str(adapter_path),
+            max_seq_length=4096,
+            load_in_4bit=True,
+        )
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        lm = HFLM(
+            pretrained=model,
+            tokenizer=tokenizer,
+            batch_size=BATCH_SIZE,
+        )
+        out = simple_evaluate(
+            model=lm,
+            tasks=[tasks],
+            num_fewshot=num_fewshot,
+            limit=limit,
+            log_samples=False,
+        )
+        out_dir = EVAL_OUT / f"lm-{label}-{tasks}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "results.json").write_text(
+            json.dumps(out, ensure_ascii=False, default=str)
+        )
+        return out["results"]
+    except Exception as e:
+        print(f"ERROR [{label}]: {e}")
+        import traceback; traceback.print_exc()
+        return {"error": str(e)}
 
 
 # %% [markdown]
