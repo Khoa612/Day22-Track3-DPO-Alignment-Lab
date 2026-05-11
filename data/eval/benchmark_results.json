@@ -8,27 +8,30 @@
   },
   "metrics": {
     "IFEval": {
-      "sft": null,
-      "dpo": null,
-      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+      "sft": 0.1,
+      "dpo": 0.133,
+      "note": "30 samples. Evaluated via lm_eval.simple_evaluate() with HFLM + FastLanguageModel.from_pretrained()"
     },
     "GSM8K": {
-      "sft": null,
-      "dpo": null,
-      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+      "sft": 0.7,
+      "dpo": 0.65,
+      "note": "20 samples. Evaluated via lm_eval.simple_evaluate() with HFLM + FastLanguageModel.from_pretrained()"
     },
     "MMLU": {
-      "sft": null,
-      "dpo": null,
-      "note": "lm-eval failed on Kaggle T4 (subprocess PATH error)"
+      "sft": 0.654,
+      "dpo": 0.654,
+      "note": "50 samples. Evaluated via lm_eval.simple_evaluate() with HFLM + FastLanguageModel.from_pretrained()"
     },
     "AlpacaEval-lite": {
       "sft": 0.5,
-      "dpo": 0.6,
-      "note": "4 wins, 16 ties, 0 losses over 20 prompts. Judge: gpt-4o-mini"
+      "dpo": 0.575,
+      "note": "20 prompts. Judge: gpt-4o-mini (OpenAI). Win-rate = (wins + ties/2) / n. DPO: 4 wins, 14 ties, 2 losses = (4 + 7) / 20 = 0.575"
     }
   },
   "deltas": {
-    "AlpacaEval-lite": 0.1
+    "IFEval": 0.033,
+    "GSM8K": -0.05,
+    "MMLU": 0.0,
+    "AlpacaEval-lite": 0.075
   }
 }
