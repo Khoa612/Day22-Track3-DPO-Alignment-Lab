@@ -39,7 +39,7 @@
 
 ## 3. Reward curves analysis (≥ 100 words)
 
-> **Paste `03_dpo_reward_curves.png` here** (or link to it in `submission/screenshots/`).
+See `submission/screenshots/03_dpo_reward_curves.png`.
 
 The DPO reward curves show a clear separation between chosen and rejected rewards over the 250 training steps. At the beginning of training, both chosen and rejected rewards started at similar levels (around -0.55 to -0.60), reflecting the fact that the model initially treated both response types similarly. As training progressed, the chosen reward increased gradually from approximately -0.55 to -0.49, while the rejected reward decreased to -0.574, creating a final reward gap of +0.084.
 
@@ -49,7 +49,7 @@ This pattern is consistent with the "classic DPO success" paradigm described in 
 
 ## 4. Qualitative comparison (≥ 8 examples)
 
-> **Paste `04_side_by_side_table.png` here** (or summarize in markdown).
+See `submission/screenshots/04_side_by_side_table.png` for full evaluation table.
 
 | # | Prompt category | Prompt (truncated) | SFT-only | SFT+DPO | Winner |
 |---|---|---|---|---|---|
